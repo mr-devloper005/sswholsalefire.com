@@ -1,4 +1,6 @@
 import { slot4BrandConfig } from '@/editable/theme/brand.config'
+export const uiHiddenTaskKeys = ['profile'] as const
+export const isUiHiddenTask = (key: string) => (uiHiddenTaskKeys as readonly string[]).includes(key)
 
 export const globalContent = {
   site: {
@@ -8,11 +10,9 @@ export const globalContent = {
     baseUrl: slot4BrandConfig.baseUrl,
   },
   nav: {
-    tagline: 'Independent reading platform',
+    tagline: 'A considered collection of useful internet',
     primaryLinks: [
-      { label: 'Articles', href: '/articles' },
-      { label: 'Visuals', href: '/image-sharing' },
-      { label: 'Listings', href: '/listings' },
+      { label: 'About', href: '/about' },
       { label: 'Contact', href: '/contact' },
     ],
     actions: {
@@ -21,8 +21,8 @@ export const globalContent = {
     },
   },
   footer: {
-    tagline: 'Stories, resources, and discoverable posts',
-    description: 'A connected publishing surface for articles, visuals, listings, profiles, bookmarks, and downloadable resources.',
+    tagline: 'Collections · Members',
+    description: 'A living collection of useful links, thoughtful resources, and things worth returning to.',
     columns: [
       {
         title: 'Explore',

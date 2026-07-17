@@ -32,7 +32,8 @@ export type TaskTheme = {
   radius: string
 }
 
-const YELP_FONT = "'Inter', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif"
+const YELP_FONT = "'Manrope', system-ui, sans-serif"
+const DISPLAY_FONT = "'Space Grotesk', system-ui, sans-serif"
 
 // Shared Yelp palette — every task inherits this; only kicker/note differ.
 const base = {
@@ -57,9 +58,9 @@ export const taskThemes: Record<TaskKey, TaskTheme> = {
   listing: { ...base, kicker: 'Businesses', note: 'Find, compare and connect with local businesses.' },
   classified: { ...base, kicker: 'Marketplace', note: 'Fresh offers and listings, ready to act on.' },
   image: { ...base, kicker: 'Photos', note: 'A visual feed of standout images and galleries.' },
-  sbm: { ...base, kicker: 'Bookmarks', note: 'Curated resources and links worth saving.' },
+  sbm: { ...base, kicker: 'Collections', note: 'A considered shelf of useful resources and remarkable links.', fontDisplay: DISPLAY_FONT, bg: '#e9ece2', surface: '#ffffff', raised: '#d9dfcf', text: '#1e2722', muted: '#687067', line: '#c6cdbf', accent: '#c6f244', accentSoft: '#edf9c7', onAccent: '#1e2722', glow: 'rgba(198,242,68,.34)', radius: '2rem' },
   pdf: { ...base, kicker: 'Documents', note: 'Downloadable guides, reports and references.' },
-  profile: { ...base, kicker: 'People', note: 'Discover creators, businesses and profiles.' },
+  profile: { ...base, kicker: 'Member', note: 'A direct, considered identity page.', fontDisplay: DISPLAY_FONT, bg: '#f1ede8', surface: '#fffdf9', raised: '#e5dbcf', text: '#302a25', muted: '#756d64', line: '#d8cec2', accent: '#a9d7d0', accentSoft: '#dcefeb', onAccent: '#302a25', glow: 'rgba(169,215,208,.36)', radius: '2rem' },
 }
 
 export function getTaskTheme(task: TaskKey): TaskTheme {
