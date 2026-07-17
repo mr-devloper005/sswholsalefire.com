@@ -8,6 +8,8 @@ import type { SitePost } from '@/lib/site-connector'
 import { EditableSiteShell } from '@/editable/shell/EditableSiteShell'
 import { EditableArticleComments } from '@/editable/components/EditableArticleComments'
 import { getTaskTheme, taskThemeStyle } from '@/editable/theme/task-themes'
+import { Ads, getSlotSizes } from '@/lib/ads'
+const pickRandom = (sizes: string[]) => sizes[Math.floor(Math.random() * sizes.length)]
 
 export const revalidate = 3
 
@@ -321,24 +323,13 @@ function ImageDetail({ post, related }: { post: SitePost; related: SitePost[] })
 
 // ----- Bookmark: a single curated resource -----
 function BookmarkDetail({ post, related }: { post: SitePost; related: SitePost[] }) {
+  return <BookmarkDetailStudio post={post} related={related} />
+  /* legacy layout retained below solely to preserve the original field mapping during this migration. */
   const website = getField(post, ['website', 'url', 'link'])
+  const domain = website.replace(/^https?:\/\//, '').split('/')[0] || 'Resource'
+  const category = categoryOf(post, 'Collection')
   return (
-    <>
-      <article className="mx-auto max-w-3xl px-6 py-14 sm:py-20">
-        <BackLink task="sbm" />
-        <div className="mt-10 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--tk-accent-soft)] text-[var(--tk-accent)]"><Bookmark className="h-7 w-7" /></div>
-        <div className="mt-6"><Kicker task="sbm">Saved resource</Kicker></div>
-        <h1 className="editable-display mt-4 text-4xl font-semibold leading-[1.05] tracking-[-0.03em] sm:text-5xl">{post.title}</h1>
-        {leadText(post) ? <p className="mt-6 text-lg leading-8 text-[var(--tk-muted)]">{leadText(post)}</p> : null}
-        {website ? (
-          <Link href={website} target="_blank" rel="noreferrer" className="mt-8 inline-flex items-center gap-2 rounded-full bg-[var(--tk-accent)] px-5 py-3 text-sm font-semibold text-[var(--tk-on-accent)] transition hover:opacity-90">
-            Open resource <ExternalLink className="h-4 w-4" />
-          </Link>
-        ) : null}
-        <BodyContent post={post} />
-      </article>
-      <RelatedStrip task="sbm" related={related} />
-    </>
+    <><header className="bg-[var(--tk-raised)]"><div className="mx-auto max-w-[var(--editable-container)] px-6 py-16 sm:py-24 lg:px-12"><span className="rounded-full bg-[var(--tk-accent)] px-3 py-1 text-[10px] font-bold uppercase tracking-wider">{domain}</span><h1 className="editable-display mt-6 max-w-5xl text-5xl font-bold leading-[.84] tracking-[-.07em] sm:text-7xl">{post.title}</h1><div className="mt-8 flex flex-wrap gap-3">{website?<Link href={website} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full bg-[var(--tk-accent-fill)] px-6 py-3 text-sm font-bold text-white">Visit resource <ExternalLink className="h-4 w-4"/></Link>:null}<span className="rounded-full border border-[var(--tk-line)] bg-white px-5 py-3 text-sm font-bold">{category}</span></div></div></header><div className="border-y border-[var(--tk-line)] bg-[var(--tk-surface)]"><div className="mx-auto grid max-w-[var(--editable-container)] gap-4 px-6 py-5 text-sm sm:grid-cols-3 lg:px-12"><span><b>Collection</b> · {category}</span><span><b>Domain</b> · {domain}</span><span><b>Verified</b> · Curated link</span></div></div><section className="mx-auto grid max-w-[var(--editable-container)] gap-12 px-6 py-16 lg:grid-cols-[minmax(0,1fr)_330px] lg:px-12"><article><h2 className="editable-display text-4xl font-bold tracking-[-.06em]">Why it belongs in your collection</h2>{leadText(post)?<p className="mt-6 text-lg leading-8 text-[var(--tk-muted)]">{leadText(post)}</p>:null}<div className="mt-7 flex flex-wrap gap-2">{[category,...(post.tags||[])].filter(Boolean).slice(0,6).map(x=><span key={x} className="rounded-full bg-[var(--tk-raised)] px-3 py-1.5 text-xs font-bold">{x}</span>)}</div><BodyContent post={post}/></article><aside className="space-y-5 lg:sticky lg:top-24 lg:self-start"><div className="rounded-[2rem] bg-[var(--tk-raised)] p-6"><Bookmark className="h-6 w-6"/><p className="mt-5 text-lg font-bold">Ready when you are.</p><p className="mt-2 text-sm leading-6 text-[var(--tk-muted)]">Keep this resource close for the next time you need it.</p>{website?<Link href={website} target="_blank" rel="noreferrer" className="mt-5 flex items-center justify-center rounded-full bg-[var(--tk-accent-fill)] px-4 py-3 text-sm font-bold text-white">Visit resource</Link>:null}</div><div className="rounded-[2rem] border border-[var(--tk-line)] p-6 text-sm leading-6"><b>Collection note</b><p className="mt-2 text-[var(--tk-muted)]">A hand-picked resource chosen for practical value.</p></div><Ads slot="sidebar" size={pickRandom(getSlotSizes('sidebar'))} showLabel /></aside></section><RelatedStrip task="sbm" related={related} /></>
   )
 }
 
@@ -384,37 +375,27 @@ function PdfDetail({ post, related }: { post: SitePost; related: SitePost[] }) {
 }
 
 // ----- Profile: identity-first with a sticky portrait -----
-function ProfileDetail({ post, related }: { post: SitePost; related: SitePost[] }) {
+function ProfileDetail({ post, related: _related }: { post: SitePost; related: SitePost[] }) {
   const images = getImages(post)
   const role = getField(post, ['role', 'designation', 'company', 'location'])
   const website = getField(post, ['website', 'url'])
   const email = getField(post, ['email'])
   return (
-    <>
-      <section className="mx-auto max-w-[var(--editable-container)] px-6 py-14 sm:py-20 lg:px-8">
-        <BackLink task="profile" />
-        <div className="mt-8 grid gap-10 lg:grid-cols-[360px_minmax(0,1fr)]">
-          <aside className="lg:sticky lg:top-24 lg:self-start">
-            <div className="rounded-[var(--tk-radius)] border border-[var(--tk-line)] bg-[var(--tk-surface)] p-8 text-center shadow-[0_22px_60px_rgba(15,23,42,0.08)]">
-              <div className="mx-auto flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border border-[var(--tk-line)] bg-[var(--tk-raised)]">
-                {images[0] ? <img src={images[0]} alt="" className="h-full w-full object-cover" /> : <UserRound className="h-14 w-14 text-[var(--tk-muted)]" />}
-              </div>
-              <h1 className="editable-display mt-6 text-2xl font-semibold tracking-[-0.02em]">{post.title}</h1>
-              {role ? <p className="mt-2 text-xs font-medium uppercase tracking-[0.16em] text-[var(--tk-accent)]">{role}</p> : null}
-              <DetailMeta post={post} center />
-              <ContactAction website={website} email={email} bare />
-            </div>
-          </aside>
-          <article className="min-w-0">
-            <Kicker task="profile">Profile</Kicker>
-            <BodyContent post={post} />
-            <ImageStrip images={images.slice(1)} label="Gallery" />
-          </article>
-        </div>
-      </section>
-      <RelatedStrip task="profile" related={related} />
-    </>
+    <><header className="relative overflow-hidden bg-[var(--tk-raised)]"><div className="mx-auto max-w-[var(--editable-container)] px-6 pb-24 pt-16 sm:pb-32 sm:pt-24 lg:px-12"><p className="text-[10px] font-bold uppercase tracking-[.22em] text-[var(--tk-muted)]">Member note</p><div className="mt-10 max-w-4xl"><h1 className="editable-display text-5xl font-semibold leading-[.84] tracking-[-.07em] sm:text-7xl lg:text-8xl">{post.title}</h1>{role?<p className="mt-5 text-lg font-semibold text-[var(--tk-muted)]">{role}</p>:null}</div></div></header><section className="mx-auto max-w-[var(--editable-container)] px-6 pb-20 lg:px-12"><div className="grid gap-10 lg:grid-cols-[330px_minmax(0,1fr)]"><aside className="-mt-16 lg:sticky lg:top-24 lg:self-start"><div className="rounded-[2rem] border border-[var(--tk-line)] bg-[var(--tk-surface)] p-7"><div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full bg-[var(--tk-accent-soft)]"><>{images[0]?<img src={images[0]} alt="" className="h-full w-full object-cover"/>:<UserRound className="h-12 w-12 text-[var(--tk-muted)]"/>}</></div><p className="mt-7 text-xs font-bold uppercase tracking-[.18em] text-[var(--tk-muted)]">Identity</p><DetailMeta post={post}/><ContactAction website={website} email={email} bare /></div><div className="mt-5 rounded-[2rem] bg-[var(--tk-accent)] p-6"><p className="text-xs font-bold uppercase tracking-[.18em]">A considered member</p><p className="mt-3 text-sm leading-6">A direct identity page for their work, references, and useful contributions.</p></div></aside><article className="pt-10 lg:pt-20"><p className="text-xs font-bold uppercase tracking-[.2em] text-[var(--tk-muted)]">Their story</p><h2 className="editable-display mt-5 text-4xl font-semibold tracking-[-.06em]">The person behind the work.</h2><BodyContent post={post}/><div className="mt-14 border-t border-[var(--tk-line)] pt-8"><p className="text-xs font-bold uppercase tracking-[.2em] text-[var(--tk-muted)]">Their content</p><ImageStrip images={images.slice(1)} label="Selected work" large /></div></article></div></section></>
   )
+}
+
+function BookmarkDetailStudio({ post, related }: { post: SitePost; related: SitePost[] }) {
+  const website = getField(post, ['website', 'url', 'link'])
+  const domain = website.replace(/^https?:\/\//, '').split('/')[0] || 'Curated resource'
+  const category = categoryOf(post, 'Collection')
+  const tags = [category, ...(post.tags || [])].filter(Boolean).slice(0, 6)
+  return <>
+    <section className="border-b border-[var(--tk-line)] bg-[var(--tk-bg)] px-6 py-6 lg:px-12"><div className="mx-auto flex max-w-[var(--editable-container)] items-center justify-between"><span className="text-[10px] font-bold uppercase tracking-[.2em] text-[var(--tk-muted)]">Collections / {category}</span><span className="rounded-full bg-[var(--tk-accent)] px-3 py-1 text-[10px] font-bold uppercase tracking-[.14em]">Curated</span></div></section>
+    <main className="bg-[var(--tk-bg)]"><header className="mx-auto max-w-[var(--editable-container)] px-6 pb-14 pt-16 lg:px-12 lg:pb-20 lg:pt-24"><div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-end"><div><p className="text-sm font-bold text-[var(--tk-muted)]">{domain}</p><h1 className="editable-display mt-6 max-w-5xl text-5xl font-semibold leading-[.82] tracking-[-.075em] sm:text-7xl lg:text-[6.25rem]">{post.title}</h1>{leadText(post)?<p className="mt-8 max-w-2xl text-lg leading-8 text-[var(--tk-muted)]">{leadText(post)}</p>:null}</div><div className="rounded-[2rem] bg-[var(--tk-accent)] p-6 text-[var(--tk-text)]"><Bookmark className="h-6 w-6"/><p className="mt-10 text-xs font-bold uppercase tracking-[.17em]">A useful find</p><p className="mt-3 text-sm leading-6">Saved with context, ready for whenever you need it next.</p></div></div></header>
+    <section className="border-y border-[var(--tk-line)] bg-[var(--tk-surface)]"><div className="mx-auto grid max-w-[var(--editable-container)] divide-y divide-[var(--tk-line)] px-6 sm:grid-cols-3 sm:divide-x sm:divide-y-0 lg:px-12"><div className="py-5 sm:pr-5"><span className="block text-[10px] font-bold uppercase tracking-[.17em] text-[var(--tk-muted)]">Collection</span><b className="mt-2 block text-sm">{category}</b></div><div className="py-5 sm:px-5"><span className="block text-[10px] font-bold uppercase tracking-[.17em] text-[var(--tk-muted)]">Source</span><b className="mt-2 block truncate text-sm">{domain}</b></div><div className="py-5 sm:pl-5"><span className="block text-[10px] font-bold uppercase tracking-[.17em] text-[var(--tk-muted)]">Status</span><b className="mt-2 block text-sm">Reviewed resource</b></div></div></section>
+    <section className="mx-auto grid max-w-[var(--editable-container)] gap-12 px-6 py-16 lg:grid-cols-[minmax(0,1fr)_310px] lg:px-12 lg:py-24"><article className="min-w-0"><p className="text-[10px] font-bold uppercase tracking-[.2em] text-[var(--tk-muted)]">The notes</p><div className="mt-6 flex flex-wrap gap-2">{tags.map(tag=><span key={tag} className="rounded-full border border-[var(--tk-line)] px-3 py-1.5 text-xs font-bold">{tag}</span>)}</div><div className="article-content sbm-reading-content mt-10 max-w-3xl text-[1.0625rem] leading-8 text-[var(--tk-text)] [&_h2]:mt-12 [&_h2]:text-4xl [&_h2]:font-semibold [&_h2]:leading-none [&_h2]:tracking-[-.06em]" dangerouslySetInnerHTML={{ __html: formatPlainText(getBody(post)) }} /></article><aside className="space-y-5 lg:sticky lg:top-24 lg:self-start"><div className="rounded-[2rem] bg-[var(--tk-surface)] p-6 shadow-[0_18px_45px_rgba(30,39,34,.08)]"><p className="text-[10px] font-bold uppercase tracking-[.18em] text-[var(--tk-muted)]">Open the source</p><p className="mt-3 break-all text-sm font-bold leading-6">{domain}</p>{website?<Link href={website} target="_blank" rel="noreferrer" className="mt-6 flex items-center justify-center gap-2 rounded-full bg-[var(--tk-text)] px-5 py-3.5 text-sm font-bold text-white transition hover:-translate-y-0.5">Visit resource <ExternalLink className="h-4 w-4"/></Link>:null}</div><div className="rounded-[2rem] border border-[var(--tk-line)] p-6"><p className="text-sm font-bold">Why it is here</p><p className="mt-3 text-sm leading-6 text-[var(--tk-muted)]">A resource selected for its usefulness, clarity, or lasting relevance.</p></div><Ads slot="sidebar" size={pickRandom(getSlotSizes('sidebar'))} showLabel /></aside></section></main><RelatedStrip task="sbm" related={related} />
+  </>
 }
 
 // ----- Shared building blocks -----
@@ -494,7 +475,7 @@ function BadgeLine({ label, value }: { label: string; value: string }) {
   )
 }
 
-function RelatedPanel({ task, post, related }: { task: TaskKey; post: SitePost; related: SitePost[] }) {
+function RelatedPanel({ task, post: _post, related }: { task: TaskKey; post: SitePost; related: SitePost[] }) {
   const taskConfig = getTaskConfig(task)
   return (
     <div className="space-y-6">
