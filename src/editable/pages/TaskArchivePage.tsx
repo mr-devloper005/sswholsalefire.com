@@ -9,6 +9,8 @@ import { taskPageMetadata } from '@/config/site.content'
 import { taskPageVoices } from '@/editable/content/task-pages.content'
 import { EditableSiteShell } from '@/editable/shell/EditableSiteShell'
 import { getTaskTheme, taskThemeStyle } from '@/editable/theme/task-themes'
+import { Ads, getSlotSizes } from '@/lib/ads'
+const pickRandom = (sizes: string[]) => sizes[Math.floor(Math.random() * sizes.length)]
 
 export const revalidate = 3
 
@@ -106,22 +108,23 @@ export function TaskArchiveView({ task, posts, pagination, category, basePath }:
   const page = pagination.page || 1
   const label = taskConfig?.label || task
   const categoryLabel = category === 'all' ? 'All categories' : CATEGORY_OPTIONS.find((item) => item.slug === category)?.name || category
+  const isCollection = task === 'sbm'
 
   return (
     <EditableSiteShell>
       <main style={taskThemeStyle(task)} className="min-h-screen bg-[var(--tk-bg)] text-[var(--tk-text)]">
-        <header className="relative overflow-hidden border-b border-[var(--tk-line)]">
+        <header className={`relative overflow-hidden border-b border-[var(--tk-line)] ${isCollection ? 'bg-[var(--tk-raised)]' : ''}`}>
           <div className="pointer-events-none absolute inset-x-0 -top-40 h-96 bg-[radial-gradient(60%_60%_at_50%_0%,var(--tk-glow),transparent_70%)]" />
-          <div className="relative mx-auto max-w-[var(--editable-container)] px-6 py-20 sm:py-28 lg:px-8">
+          <div className={`relative mx-auto max-w-[var(--editable-container)] px-6 py-20 sm:py-28 lg:px-8 ${isCollection ? 'lg:py-32' : ''}`}>
             <div className="flex items-center gap-3 text-[11px] font-medium uppercase tracking-[0.34em] text-[var(--tk-accent)]">
               <span>{theme.kicker}</span>
               <span className="h-1 w-1 rounded-full bg-[var(--tk-accent)] opacity-50" />
               <span className="text-[var(--tk-muted)]">{label}</span>
             </div>
-            <h1 className="editable-display mt-6 max-w-3xl text-balance text-[2.5rem] font-semibold leading-[1.06] tracking-[-0.03em] sm:text-5xl lg:text-6xl">
-              {voice?.headline || `Browse ${label}`}
+            <h1 className={`editable-display mt-6 max-w-4xl text-balance font-semibold tracking-[-0.06em] ${isCollection ? 'text-5xl leading-[.84] sm:text-7xl lg:text-8xl' : 'text-[2.5rem] leading-[1.06] sm:text-5xl lg:text-6xl'}`}>
+              {isCollection ? 'The useful internet, kept beautifully close.' : voice?.headline || `Browse ${label}`}
             </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-[var(--tk-muted)]">{voice?.description || theme.note}</p>
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-[var(--tk-muted)]">{isCollection ? theme.note : voice?.description || theme.note}</p>
             {voice?.chips?.length ? (
               <div className="mt-8 flex flex-wrap gap-2.5">
                 {voice.chips.map((chip) => (
@@ -156,7 +159,7 @@ export function TaskArchiveView({ task, posts, pagination, category, basePath }:
         <section className="mx-auto max-w-[var(--editable-container)] px-6 py-16 sm:py-20 lg:px-8">
           {posts.length ? (
             <div className={taskGrid[task]}>
-              {posts.map((post, index) => <ArchivePostCard key={post.id || post.slug} post={post} task={task} basePath={basePath} index={index} />)}
+              {posts.map((post, index) => <div key={post.id || post.slug || `${post.title}-${index}`} className="contents"><ArchivePostCard post={post} task={task} basePath={basePath} index={index} />{task === 'sbm' && index === 5 ? <div className="md:col-span-2 xl:col-span-3"><Ads slot="in-feed" size={pickRandom(getSlotSizes('in-feed'))} showLabel /></div> : null}</div>)}
             </div>
           ) : (
             <div className="mx-auto max-w-xl rounded-[var(--tk-radius)] border border-dashed border-[var(--tk-line)] bg-[var(--tk-surface)] px-8 py-16 text-center">
@@ -319,16 +322,15 @@ function ImageArchiveCard({ post, href, index }: { post: SitePost; href: string;
 
 function BookmarkArchiveCard({ post, href, index }: { post: SitePost; href: string; index: number }) {
   const website = getField(post, ['website', 'url', 'link'])
+  const category = getCategory(post, 'Resource')
   return (
-    <Link href={href} className={`${cardBase} flex gap-4 p-6`}>
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--tk-accent-soft)] text-[var(--tk-accent)]">
-        <Globe className="h-5 w-5" />
-      </div>
-      <div className="min-w-0 flex-1">
+    <Link href={href} className={`${cardBase} group relative flex min-h-[265px] flex-col justify-between overflow-hidden p-6 hover:bg-[var(--tk-accent)]`}>
+      <div className="flex items-start justify-between gap-4"><span className="rounded-full border border-[var(--tk-line)] bg-[var(--tk-surface)] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[.16em] text-[var(--tk-muted)] group-hover:border-[var(--tk-text)]">{category}</span><span className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--tk-accent-soft)] text-[var(--tk-text)]"><Globe className="h-5 w-5" /></span></div>
+      <div className="min-w-0">
         <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-[var(--tk-muted)]">Saved · {String(index + 1).padStart(2, '0')}</span>
-        <h2 className="editable-display mt-1.5 text-lg font-semibold leading-snug tracking-[-0.02em]">{post.title}</h2>
+        <h2 className="editable-display mt-3 text-2xl font-semibold leading-[.94] tracking-[-.05em]">{post.title}</h2>
         <p className="mt-2 line-clamp-2 text-sm leading-6 text-[var(--tk-muted)]">{getSummary(post)}</p>
-        {website ? <p className="mt-3 truncate text-xs font-medium text-[var(--tk-accent)]">{cleanDomain(website)}</p> : null}
+        {website ? <p className="mt-5 truncate text-xs font-bold text-[var(--tk-text)]">{cleanDomain(website)} <ArrowUpRight className="ml-1 inline h-3.5 w-3.5" /></p> : null}
       </div>
     </Link>
   )
